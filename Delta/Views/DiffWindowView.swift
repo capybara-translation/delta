@@ -3,9 +3,8 @@ import SwiftUI
 struct DiffWindowView: View {
     @State private var textA = ""
     @State private var textB = ""
-    @State private var mode: DiffMode = .line
-    @State private var result: [DiffSegment] = []
-    @State private var resultMode: DiffMode = .line
+    @AppStorage("splitOrientation") private var orientation: SplitOrientation = .horizontal
+    @State private var rows: [DiffRow] = []
 
     var body: some View {
         VStack(spacing: 8) {
@@ -13,9 +12,9 @@ struct DiffWindowView: View {
                 .frame(minHeight: 160)
 
             HStack {
-                Picker("", selection: $mode) {
-                    Text("行").tag(DiffMode.line)
-                    Text("文字").tag(DiffMode.character)
+                Picker("", selection: $orientation) {
+                    Text("左右").tag(SplitOrientation.horizontal)
+                    Text("上下").tag(SplitOrientation.vertical)
                 }
                 .pickerStyle(.segmented)
                 .fixedSize()
@@ -28,14 +27,13 @@ struct DiffWindowView: View {
 
             Divider()
 
-            DiffResultView(segments: result, mode: resultMode)
+            SplitDiffView(rows: rows, orientation: orientation)
         }
         .padding(12)
         .frame(minWidth: 480, minHeight: 420)
     }
 
     private func run() {
-        result = DiffEngine.diff(textA, textB, mode: mode)
-        resultMode = mode
+        rows = DiffEngine.sideBySide(textA, textB)
     }
 }
