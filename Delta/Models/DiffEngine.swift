@@ -39,6 +39,10 @@ enum DiffEngine {
 
     /// CollectionDifference の removals/insertions から、
     /// 削除→挿入→共通の順で 1 列のユニファイドなセグメント列を再構成する。
+    ///
+    /// 不変条件: 変更ブロック内では必ず削除群が挿入群より先に出る（削除判定を
+    /// 挿入判定より前に行うため）。`sideBySide` はこの順序に依存して削除/挿入を
+    /// ペアリングするので、この分岐順を変えないこと。
     static func align(_ a: [String], _ b: [String]) -> [DiffSegment] {
         let difference = b.difference(from: a)
         var removedOffsets = Set<Int>()
