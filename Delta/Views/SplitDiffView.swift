@@ -46,6 +46,7 @@ struct SplitDiffView: View {
                     VStack(spacing: 0) {
                         pane { $0.left }
                         Divider()
+                            .padding(.vertical, centerGutter)
                         pane { $0.right }
                     }
                 }
