@@ -107,4 +107,85 @@ struct DiffEngineTests {
             DiffSegment(kind: .insert, text: "b"),
         ])
     }
+
+    // MARK: - sideBySide
+
+    @Test func sideBySideAllEqual() {
+        let r = DiffEngine.sideBySide("a\nb", "a\nb")
+        #expect(r == [
+            DiffRow(left: [DiffSegment(kind: .equal, text: "a")], right: [DiffSegment(kind: .equal, text: "a")]),
+            DiffRow(left: [DiffSegment(kind: .equal, text: "b")], right: [DiffSegment(kind: .equal, text: "b")]),
+        ])
+    }
+
+    @Test func sideBySidePureInsert() {
+        let r = DiffEngine.sideBySide("a", "a\nb")
+        #expect(r == [
+            DiffRow(left: [DiffSegment(kind: .equal, text: "a")], right: [DiffSegment(kind: .equal, text: "a")]),
+            DiffRow(left: nil, right: [DiffSegment(kind: .insert, text: "b")]),
+        ])
+    }
+
+    @Test func sideBySidePureDelete() {
+        let r = DiffEngine.sideBySide("a\nb", "a")
+        #expect(r == [
+            DiffRow(left: [DiffSegment(kind: .equal, text: "a")], right: [DiffSegment(kind: .equal, text: "a")]),
+            DiffRow(left: [DiffSegment(kind: .delete, text: "b")], right: nil),
+        ])
+    }
+
+    @Test func sideBySideIntralineReplace() {
+        let r = DiffEngine.sideBySide("色赤", "色青")
+        #expect(r == [
+            DiffRow(
+                left: [DiffSegment(kind: .equal, text: "色"), DiffSegment(kind: .delete, text: "赤")],
+                right: [DiffSegment(kind: .equal, text: "色"), DiffSegment(kind: .insert, text: "青")]
+            ),
+        ])
+    }
+
+    @Test func sideBySideMultiLineReplacePairing() {
+        let r = DiffEngine.sideBySide("a\nb\nc", "x\ny\nc")
+        #expect(r == [
+            DiffRow(left: [DiffSegment(kind: .delete, text: "a")], right: [DiffSegment(kind: .insert, text: "x")]),
+            DiffRow(left: [DiffSegment(kind: .delete, text: "b")], right: [DiffSegment(kind: .insert, text: "y")]),
+            DiffRow(left: [DiffSegment(kind: .equal, text: "c")], right: [DiffSegment(kind: .equal, text: "c")]),
+        ])
+    }
+
+    @Test func sideBySideMoreDeletesThanInserts() {
+        // A=["a","b","c"], B=["x"]; 行 diff: [del a, del b, del c, ins x]
+        let r = DiffEngine.sideBySide("a\nb\nc", "x")
+        #expect(r == [
+            DiffRow(left: [DiffSegment(kind: .delete, text: "a")], right: [DiffSegment(kind: .insert, text: "x")]),
+            DiffRow(left: [DiffSegment(kind: .delete, text: "b")], right: nil),
+            DiffRow(left: [DiffSegment(kind: .delete, text: "c")], right: nil),
+        ])
+    }
+
+    @Test func sideBySideMoreInsertsThanDeletes() {
+        // A=["a"], B=["x","y","z"]; 行 diff: [del a, ins x, ins y, ins z]
+        let r = DiffEngine.sideBySide("a", "x\ny\nz")
+        #expect(r == [
+            DiffRow(left: [DiffSegment(kind: .delete, text: "a")], right: [DiffSegment(kind: .insert, text: "x")]),
+            DiffRow(left: nil, right: [DiffSegment(kind: .insert, text: "y")]),
+            DiffRow(left: nil, right: [DiffSegment(kind: .insert, text: "z")]),
+        ])
+    }
+
+    @Test func sideBySideTrailingNewline() {
+        // "a\n"->["a",""], "a"->["a"]; 行 diff [equal a, delete ""]
+        let r = DiffEngine.sideBySide("a\n", "a")
+        #expect(r == [
+            DiffRow(left: [DiffSegment(kind: .equal, text: "a")], right: [DiffSegment(kind: .equal, text: "a")]),
+            DiffRow(left: [DiffSegment(kind: .delete, text: "")], right: nil),
+        ])
+    }
+
+    @Test func sideBySideBothEmpty() {
+        let r = DiffEngine.sideBySide("", "")
+        #expect(r == [
+            DiffRow(left: [DiffSegment(kind: .equal, text: "")], right: [DiffSegment(kind: .equal, text: "")]),
+        ])
+    }
 }

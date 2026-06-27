@@ -14,6 +14,11 @@ struct DiffSegment: Equatable {
     let text: String
 }
 
+struct DiffRow: Equatable {
+    let left: [DiffSegment]?    // nil = この行は左に存在しない（ギャップ）
+    let right: [DiffSegment]?   // nil = この行は右に存在しない（ギャップ）
+}
+
 enum DiffEngine {
     static func diff(_ textA: String, _ textB: String, mode: DiffMode) -> [DiffSegment] {
         let a = tokenize(textA, mode: mode)
@@ -34,6 +39,10 @@ enum DiffEngine {
 
     /// CollectionDifference の removals/insertions から、
     /// 削除→挿入→共通の順で 1 列のユニファイドなセグメント列を再構成する。
+    ///
+    /// 不変条件: 変更ブロック内では必ず削除群が挿入群より先に出る（削除判定を
+    /// 挿入判定より前に行うため）。`sideBySide` はこの順序に依存して削除/挿入を
+    /// ペアリングするので、この分岐順を変えないこと。
     static func align(_ a: [String], _ b: [String]) -> [DiffSegment] {
         let difference = b.difference(from: a)
         var removedOffsets = Set<Int>()
@@ -68,5 +77,68 @@ enum DiffEngine {
             }
         }
         return segments
+    }
+
+    // MARK: - Side-by-side
+
+    /// 行揃えの行ペア列を生成する。
+    /// 1. 行 diff（既存）でユニファイドな行セグメント列を得る。
+    /// 2. 連続する削除群と直後の挿入群をペアにし、各ペアは文字 diff（既存）で行内ハイライトを付ける。
+    ///    余った削除/挿入は片側のみの行にする。
+    static func sideBySide(_ textA: String, _ textB: String) -> [DiffRow] {
+        let lineSegments = diff(textA, textB, mode: .line)
+        var rows: [DiffRow] = []
+        var index = 0
+        while index < lineSegments.count {
+            switch lineSegments[index].kind {
+            case .equal:
+                let line = lineSegments[index].text
+                rows.append(DiffRow(
+                    left: [DiffSegment(kind: .equal, text: line)],
+                    right: [DiffSegment(kind: .equal, text: line)]
+                ))
+                index += 1
+            case .delete:
+                var deletes: [String] = []
+                while index < lineSegments.count, lineSegments[index].kind == .delete {
+                    deletes.append(lineSegments[index].text)
+                    index += 1
+                }
+                var inserts: [String] = []
+                while index < lineSegments.count, lineSegments[index].kind == .insert {
+                    inserts.append(lineSegments[index].text)
+                    index += 1
+                }
+                rows.append(contentsOf: pairRows(deletes: deletes, inserts: inserts))
+            case .insert:
+                var inserts: [String] = []
+                while index < lineSegments.count, lineSegments[index].kind == .insert {
+                    inserts.append(lineSegments[index].text)
+                    index += 1
+                }
+                rows.append(contentsOf: pairRows(deletes: [], inserts: inserts))
+            }
+        }
+        return rows
+    }
+
+    /// 削除行群と挿入行群を index 順にペアリングする。
+    /// ペアは文字 diff で行内ハイライト、余りは片側のみの行。
+    private static func pairRows(deletes: [String], inserts: [String]) -> [DiffRow] {
+        var rows: [DiffRow] = []
+        let pairCount = min(deletes.count, inserts.count)
+        for k in 0..<pairCount {
+            let charDiff = diff(deletes[k], inserts[k], mode: .character)
+            let leftCell = charDiff.filter { $0.kind != .insert }   // equal + delete
+            let rightCell = charDiff.filter { $0.kind != .delete }  // equal + insert
+            rows.append(DiffRow(left: leftCell, right: rightCell))
+        }
+        for k in pairCount..<deletes.count {
+            rows.append(DiffRow(left: [DiffSegment(kind: .delete, text: deletes[k])], right: nil))
+        }
+        for k in pairCount..<inserts.count {
+            rows.append(DiffRow(left: nil, right: [DiffSegment(kind: .insert, text: inserts[k])]))
+        }
+        return rows
     }
 }
