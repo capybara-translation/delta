@@ -86,4 +86,25 @@ struct DiffEngineTests {
         let r = DiffEngine.diff(a, b, mode: .line)
         #expect(!r.isEmpty)
     }
+
+    @Test func lineMultiEditReplace() {
+        let r = DiffEngine.diff("a\nb\nc", "a\nx\nc", mode: .line)
+        #expect(r == [
+            DiffSegment(kind: .equal, text: "a"),
+            DiffSegment(kind: .delete, text: "b"),
+            DiffSegment(kind: .insert, text: "x"),
+            DiffSegment(kind: .equal, text: "c"),
+        ])
+    }
+
+    @Test func lineEmptyToNonEmpty() {
+        // "" -> [""], "a\nb" -> ["a", "b"]; no common element with "",
+        // so the empty token is deleted and both lines inserted.
+        let r = DiffEngine.diff("", "a\nb", mode: .line)
+        #expect(r == [
+            DiffSegment(kind: .delete, text: ""),
+            DiffSegment(kind: .insert, text: "a"),
+            DiffSegment(kind: .insert, text: "b"),
+        ])
+    }
 }

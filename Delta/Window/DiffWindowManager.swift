@@ -23,6 +23,6 @@ final class DiffWindowManager {
             window = newWindow
         }
         window?.makeKeyAndOrderFront(nil)
-        NSApplication.shared.activate(ignoringOtherApps: true)
+        NSApplication.shared.activate()
     }
 }

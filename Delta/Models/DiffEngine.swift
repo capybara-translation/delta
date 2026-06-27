@@ -1,5 +1,3 @@
-import Foundation
-
 enum DiffMode: Hashable {
     case line
     case character

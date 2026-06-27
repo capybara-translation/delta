@@ -5,6 +5,7 @@ struct DiffWindowView: View {
     @State private var textB = ""
     @State private var mode: DiffMode = .line
     @State private var result: [DiffSegment] = []
+    @State private var resultMode: DiffMode = .line
 
     var body: some View {
         VStack(spacing: 8) {
@@ -27,7 +28,7 @@ struct DiffWindowView: View {
 
             Divider()
 
-            DiffResultView(segments: result, mode: mode)
+            DiffResultView(segments: result, mode: resultMode)
         }
         .padding(12)
         .frame(minWidth: 480, minHeight: 420)
@@ -35,5 +36,6 @@ struct DiffWindowView: View {
 
     private func run() {
         result = DiffEngine.diff(textA, textB, mode: mode)
+        resultMode = mode
     }
 }
