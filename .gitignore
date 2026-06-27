@@ -1,0 +1,8 @@
+.DS_Store
+build/
+DerivedData/
+*.xcodeproj
+Delta/Info.plist
+*.xcuserstate
+xcuserdata/
+.swiftpm/

@@ -1,0 +1,52 @@
+name: Delta
+options:
+  bundleIdPrefix: com.capybara
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    CODE_SIGNING_REQUIRED: "NO"
+    CODE_SIGNING_ALLOWED: "NO"
+    CODE_SIGN_IDENTITY: ""
+targets:
+  Delta:
+    type: application
+    platform: macOS
+    sources:
+      - Delta
+    info:
+      path: Delta/Info.plist
+      properties:
+        LSUIElement: true
+        CFBundleName: Delta
+        CFBundleDisplayName: Delta
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.capybara.delta
+  DeltaTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - DeltaTests
+    dependencies:
+      - target: Delta
+    settings:
+      base:
+        BUNDLE_LOADER: "$(TEST_HOST)"
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Delta.app/Contents/MacOS/Delta"
+schemes:
+  Delta:
+    build:
+      targets:
+        Delta: all
+        DeltaTests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - DeltaTests
