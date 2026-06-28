@@ -15,7 +15,7 @@ final class DiffWindowManager {
         if window == nil {
             let hosting = NSHostingController(rootView: DiffWindowView())
             let newWindow = NSWindow(contentViewController: hosting)
-            newWindow.title = "Diff"
+            newWindow.title = "Delta"
             newWindow.styleMask = [.titled, .closable, .miniaturizable, .resizable]
             newWindow.setContentSize(NSSize(width: 540, height: 480))
             newWindow.isReleasedWhenClosed = false
