@@ -1,4 +1,6 @@
 import SwiftUI
+import AppKit
+import UniformTypeIdentifiers
 
 struct DiffWindowView: View {
     @AppStorage("textA") private var textA = ""
@@ -32,6 +34,9 @@ struct DiffWindowView: View {
                         }
                     }
 
+                Button("Export") { export() }
+                    .disabled(rows.isEmpty)
+
                 Button("Compare") { run() }
                     .keyboardShortcut(.return, modifiers: .command)
                     .buttonStyle(.borderedProminent)
@@ -48,5 +53,14 @@ struct DiffWindowView: View {
     private func run() {
         rows = DiffEngine.sideBySide(textA, textB)
         history.add(textA: textA, textB: textB, date: Date())
+    }
+
+    private func export() {
+        let panel = NSSavePanel()
+        panel.allowedContentTypes = [.html]
+        panel.nameFieldStringValue = "delta-diff.html"
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        let html = HTMLExporter.html(rows: rows, orientation: orientation, generatedAt: Date())
+        try? html.write(to: url, atomically: true, encoding: .utf8)
     }
 }
