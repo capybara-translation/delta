@@ -34,6 +34,7 @@ struct DiffWindowView: View {
 
                 Button("Compare") { run() }
                     .keyboardShortcut(.return, modifiers: .command)
+                    .buttonStyle(.borderedProminent)
             }
 
             Divider()
