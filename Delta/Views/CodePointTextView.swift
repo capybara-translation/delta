@@ -1,0 +1,87 @@
+import SwiftUI
+import AppKit
+
+/// NSTextView をラップした入力欄。text を双方向同期し、選択（未選択ならカーソル直前の
+/// 1書記素）を onSelectionChange で報告する。macOS 14 の TextEditor が選択 API を
+/// 持たないための AppKit ラップ。
+struct CodePointTextView: NSViewRepresentable {
+    @Binding var text: String
+    var onSelectionChange: (String) -> Void
+
+    func makeNSView(context: Context) -> NSScrollView {
+        let textView = NSTextView()
+        textView.delegate = context.coordinator
+        textView.isRichText = false
+        textView.font = .monospacedSystemFont(ofSize: NSFont.systemFontSize, weight: .regular)
+        textView.isAutomaticQuoteSubstitutionEnabled = false
+        textView.isAutomaticTextReplacementEnabled = false
+        textView.isAutomaticDashSubstitutionEnabled = false
+        textView.isAutomaticSpellingCorrectionEnabled = false
+        textView.allowsUndo = true
+        textView.string = text
+
+        let scroll = NSScrollView()
+        scroll.documentView = textView
+        scroll.hasVerticalScroller = true
+
+        textView.isVerticallyResizable = true
+        textView.isHorizontallyResizable = false
+        textView.autoresizingMask = [.width]
+        textView.minSize = NSSize(width: 0, height: 0)
+        textView.maxSize = NSSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)
+        textView.textContainer?.widthTracksTextView = true
+        textView.textContainer?.containerSize = NSSize(
+            width: scroll.contentSize.width,
+            height: CGFloat.greatestFiniteMagnitude
+        )
+
+        scroll.borderType = .bezelBorder
+        return scroll
+    }
+
+    func updateNSView(_ nsView: NSScrollView, context: Context) {
+        // 最新のクロージャ/バインディングを Coordinator に反映する。
+        context.coordinator.parent = self
+        guard let textView = nsView.documentView as? NSTextView else { return }
+        if textView.string != text {
+            // 注: text を外部から（ユーザー入力以外で）変更する機能を足す場合、ここでの
+            // string 代入が選択変更通知を同期発火し report() → @State 書き込みが
+            // ビュー更新中に走り得る。その際は report() を再入ガード/遅延する。
+            textView.string = text
+        }
+    }
+
+    func makeCoordinator() -> Coordinator { Coordinator(self) }
+
+    final class Coordinator: NSObject, NSTextViewDelegate {
+        var parent: CodePointTextView
+        init(_ parent: CodePointTextView) { self.parent = parent }
+
+        func textDidChange(_ notification: Notification) {
+            guard let textView = notification.object as? NSTextView else { return }
+            parent.text = textView.string
+            report(textView)
+        }
+
+        func textViewDidChangeSelection(_ notification: Notification) {
+            guard let textView = notification.object as? NSTextView else { return }
+            report(textView)
+        }
+
+        /// 選択テキスト（未選択ならカーソル直前の1書記素）を報告する。
+        private func report(_ textView: NSTextView) {
+            let ns = textView.string as NSString
+            let range = textView.selectedRange
+            let selected: String
+            if range.length > 0, NSMaxRange(range) <= ns.length {
+                selected = ns.substring(with: range)
+            } else if range.location > 0, range.location <= ns.length {
+                let composed = ns.rangeOfComposedCharacterSequence(at: range.location - 1)
+                selected = ns.substring(with: composed)
+            } else {
+                selected = ""
+            }
+            parent.onSelectionChange(selected)
+        }
+    }
+}
