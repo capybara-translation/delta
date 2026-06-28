@@ -5,6 +5,8 @@ struct DiffWindowView: View {
     @AppStorage("textB") private var textB = ""
     @AppStorage("splitOrientation") private var orientation: SplitOrientation = .horizontal
     @State private var rows: [DiffRow] = []
+    @State private var history = HistoryStore()
+    @State private var showingHistory = false
 
     var body: some View {
         VStack(spacing: 8) {
@@ -21,6 +23,15 @@ struct DiffWindowView: View {
 
                 Spacer()
 
+                Button("History") { showingHistory.toggle() }
+                    .popover(isPresented: $showingHistory, arrowEdge: .bottom) {
+                        HistoryView(store: history) { entry in
+                            textA = entry.textA
+                            textB = entry.textB
+                            showingHistory = false
+                        }
+                    }
+
                 Button("Compare") { run() }
                     .keyboardShortcut(.return, modifiers: .command)
             }
@@ -35,5 +46,6 @@ struct DiffWindowView: View {
 
     private func run() {
         rows = DiffEngine.sideBySide(textA, textB)
+        history.add(textA: textA, textB: textB, date: Date())
     }
 }
