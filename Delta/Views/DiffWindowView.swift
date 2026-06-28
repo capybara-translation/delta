@@ -1,8 +1,8 @@
 import SwiftUI
 
 struct DiffWindowView: View {
-    @State private var textA = ""
-    @State private var textB = ""
+    @AppStorage("textA") private var textA = ""
+    @AppStorage("textB") private var textB = ""
     @AppStorage("splitOrientation") private var orientation: SplitOrientation = .horizontal
     @State private var rows: [DiffRow] = []
 
