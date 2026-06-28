@@ -29,4 +29,21 @@ struct CodePointFormatterTests {
         let expected = Array(repeating: "U+0061", count: 24).joined(separator: " ") + " … (+1)"
         #expect(r == expected)
     }
+
+    @Test func astralScalarHasFiveDigitHexAndName() {
+        // U+1F600 は5桁16進。1スカラーなので名前併記。
+        #expect(CodePointFormatter.describe("\u{1F600}") == "U+1F600 GRINNING FACE")
+    }
+
+    @Test func controlScalarHasNoName() {
+        // U+0001 は名前を持たない制御文字 → コードポイントのみ。
+        #expect(CodePointFormatter.describe("\u{0001}") == "U+0001")
+    }
+
+    @Test func exactlyMaxScalarsHasNoOverflowSuffix() {
+        // ちょうど24スカラーは打ち切りサフィックスを付けない。
+        let r = CodePointFormatter.describe(String(repeating: "a", count: 24))
+        let expected = Array(repeating: "U+0061", count: 24).joined(separator: " ")
+        #expect(r == expected)
+    }
 }

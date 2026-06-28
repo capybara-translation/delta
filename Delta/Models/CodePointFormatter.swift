@@ -9,7 +9,7 @@ enum CodePointFormatter {
         if scalars.isEmpty { return "" }
 
         var parts = scalars.prefix(maxScalars).map(hex)
-        if scalars.count == 1, let name = scalars.first?.properties.name, !name.isEmpty {
+        if scalars.count == 1, let name = scalars[0].properties.name, !name.isEmpty {
             parts[0] += " " + name
         }
 

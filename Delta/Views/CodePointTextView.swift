@@ -44,6 +44,9 @@ struct CodePointTextView: NSViewRepresentable {
         context.coordinator.parent = self
         guard let textView = nsView.documentView as? NSTextView else { return }
         if textView.string != text {
+            // 注: text を外部から（ユーザー入力以外で）変更する機能を足す場合、ここでの
+            // string 代入が選択変更通知を同期発火し report() → @State 書き込みが
+            // ビュー更新中に走り得る。その際は report() を再入ガード/遅延する。
             textView.string = text
         }
     }
