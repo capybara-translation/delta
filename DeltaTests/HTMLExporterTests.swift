@@ -58,4 +58,11 @@ struct HTMLExporterTests {
         #expect(html.contains("class=\"del\""))
         #expect(html.contains("class=\"gap\""))
     }
+
+    @Test func emptyWholeLineKeepsColor() {
+        // "x\n" vs "x": the deleted trailing empty line must still be colored (not an uncolored gap).
+        let rows = DiffEngine.sideBySide("x\n", "x")
+        let html = HTMLExporter.html(rows: rows, orientation: .horizontal, generatedAt: epoch)
+        #expect(html.contains("class=\"del\""))
+    }
 }

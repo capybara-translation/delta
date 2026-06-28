@@ -62,10 +62,11 @@ enum HTMLExporter {
     /// A single non-equal segment colors the whole cell; otherwise changed runs are wrapped in spans.
     private static func render(_ segments: [DiffSegment]) -> (String, String) {
         let joined = segments.map(\.text).joined()
-        if joined.isEmpty { return ("", nbsp) }
         if segments.count == 1, segments[0].kind != .equal {
-            return (segments[0].kind == .insert ? "ins" : "del", escape(joined))
+            let inner = joined.isEmpty ? nbsp : escape(joined)
+            return (segments[0].kind == .insert ? "ins" : "del", inner)
         }
+        if joined.isEmpty { return ("", nbsp) }
         let inner = segments.map { seg -> String in
             let t = escape(seg.text)
             switch seg.kind {
