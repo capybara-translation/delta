@@ -188,4 +188,49 @@ struct DiffEngineTests {
             DiffRow(left: [DiffSegment(kind: .equal, text: "")], right: [DiffSegment(kind: .equal, text: "")]),
         ])
     }
+
+    // MARK: - スカラー敏感（符号化差の検出）
+
+    @Test func characterDiffDetectsNFCvsNFD() {
+        // NFC「ờ」= U+1EDD（1スカラー）, NFD「ờ」= U+006F U+031B U+0300（3スカラー）。
+        // 正準等価だが符号化が違うので、スカラー比較では差分になる。
+        let nfc = "\u{1EDD}"
+        let nfd = "\u{006F}\u{031B}\u{0300}"
+        let r = DiffEngine.diff(nfc, nfd, mode: .character)
+        #expect(r == [
+            DiffSegment(kind: .delete, text: nfc),
+            DiffSegment(kind: .insert, text: nfd),
+        ])
+    }
+
+    @Test func sideBySideDetectsNFCvsNFD() {
+        // 1行中で「ờ」だけ符号化が違う。行も符号化敏感に検出され、行内で「ờ」がハイライトされる。
+        let nfc = "\u{1EDD}"
+        let nfd = "\u{006F}\u{031B}\u{0300}"
+        let r = DiffEngine.sideBySide("A" + nfc + "B", "A" + nfd + "B")
+        #expect(r == [
+            DiffRow(
+                left: [
+                    DiffSegment(kind: .equal, text: "A"),
+                    DiffSegment(kind: .delete, text: nfc),
+                    DiffSegment(kind: .equal, text: "B"),
+                ],
+                right: [
+                    DiffSegment(kind: .equal, text: "A"),
+                    DiffSegment(kind: .insert, text: nfd),
+                    DiffSegment(kind: .equal, text: "B"),
+                ]
+            ),
+        ])
+    }
+
+    @Test func identicalScalarsStillEqual() {
+        // 同じスカラー列は引き続き差分なし（リグレッション確認）。
+        let r = DiffEngine.diff("abc", "abc", mode: .character)
+        #expect(r == [
+            DiffSegment(kind: .equal, text: "a"),
+            DiffSegment(kind: .equal, text: "b"),
+            DiffSegment(kind: .equal, text: "c"),
+        ])
+    }
 }
