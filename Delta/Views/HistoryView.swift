@@ -47,8 +47,10 @@ struct HistoryView: View {
     }
 
     private func preview(_ entry: HistoryEntry) -> String {
-        let a = entry.textA.replacingOccurrences(of: "\n", with: " ")
-        let b = entry.textB.replacingOccurrences(of: "\n", with: " ")
+        // Truncate before building the preview string so multi-MB inputs don't
+        // allocate full copies per row; the row is single-line and clipped anyway.
+        let a = entry.textA.prefix(200).replacingOccurrences(of: "\n", with: " ")
+        let b = entry.textB.prefix(200).replacingOccurrences(of: "\n", with: " ")
         return "A: \(a)  B: \(b)"
     }
 }
