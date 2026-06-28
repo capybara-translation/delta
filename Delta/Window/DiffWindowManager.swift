@@ -25,4 +25,14 @@ final class DiffWindowManager {
         window?.makeKeyAndOrderFront(nil)
         NSApplication.shared.activate()
     }
+
+    /// Toggles the window: hides it when it is the frontmost key window,
+    /// otherwise shows and activates it (creating it on first use via show()).
+    func toggle() {
+        if let window, window.isVisible, window.isKeyWindow {
+            window.orderOut(nil)
+        } else {
+            show()
+        }
+    }
 }
