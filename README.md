@@ -1,4 +1,4 @@
-# Delta
+# Delta Diff
 
 A lightweight menu-bar diff tool for macOS. Open a small window from the menu
 bar, paste two pieces of text, and see a color-coded difference — without
@@ -53,7 +53,7 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
 open build/Build/Products/Debug/Delta.app
 ```
 
-Choose "Open Diff Window" from the document icon (`doc.on.doc`, an SF Symbol)
+Choose "Open Delta Diff" from the document icon (`doc.on.doc`, an SF Symbol)
 in the menu bar to open the window.
 
 ## Test
