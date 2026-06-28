@@ -23,6 +23,18 @@ struct CodePointTextView: NSViewRepresentable {
         let scroll = NSScrollView()
         scroll.documentView = textView
         scroll.hasVerticalScroller = true
+
+        textView.isVerticallyResizable = true
+        textView.isHorizontallyResizable = false
+        textView.autoresizingMask = [.width]
+        textView.minSize = NSSize(width: 0, height: 0)
+        textView.maxSize = NSSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)
+        textView.textContainer?.widthTracksTextView = true
+        textView.textContainer?.containerSize = NSSize(
+            width: scroll.contentSize.width,
+            height: CGFloat.greatestFiniteMagnitude
+        )
+
         scroll.borderType = .bezelBorder
         return scroll
     }
@@ -56,9 +68,9 @@ struct CodePointTextView: NSViewRepresentable {
         /// 選択テキスト（未選択ならカーソル直前の1書記素）を報告する。
         private func report(_ textView: NSTextView) {
             let ns = textView.string as NSString
-            let range = textView.selectedRange()
+            let range = textView.selectedRange
             let selected: String
-            if range.length > 0 {
+            if range.length > 0, NSMaxRange(range) <= ns.length {
                 selected = ns.substring(with: range)
             } else if range.location > 0, range.location <= ns.length {
                 let composed = ns.rangeOfComposedCharacterSequence(at: range.location - 1)
