@@ -1,9 +1,9 @@
-/// 選択文字列を「U+XXXX ...」の表示文字列にする純粋関数。
+/// Pure function that converts a selected string to a display string in "U+XXXX ..." format.
 enum CodePointFormatter {
     static let maxScalars = 24
 
-    /// 各スカラーを U+XXXX で列挙する。ちょうど1スカラーのときは Unicode 名を併記。
-    /// 空入力は空文字。maxScalars を超える場合は先頭 maxScalars 個＋" … (+N)"。
+    /// Lists each scalar as U+XXXX. When there is exactly one scalar, appends the Unicode name.
+    /// Empty input returns an empty string. When the count exceeds maxScalars, returns the first maxScalars entries plus " … (+N)".
     static func describe(_ text: String) -> String {
         let scalars = Array(text.unicodeScalars)
         if scalars.isEmpty { return "" }
@@ -20,7 +20,7 @@ enum CodePointFormatter {
         return result
     }
 
-    /// スカラーを最小4桁の "U+XXXX"（大文字16進）にする。
+    /// Formats a scalar as "U+XXXX" with at least 4 uppercase hex digits.
     private static func hex(_ scalar: Unicode.Scalar) -> String {
         let digits = String(scalar.value, radix: 16, uppercase: true)
         let padded = digits.count < 4

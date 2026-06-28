@@ -11,7 +11,7 @@ struct TabKeyResolverTests {
     }
 
     @Test func otherKeyPassesThrough() {
-        // keyCode 0 は 'a'。タブキーではない。
+        // keyCode 0 is 'a' — not the Tab key.
         #expect(TabKeyResolver.action(keyCode: 0, hasControl: false) == .passThrough)
     }
 

@@ -1,9 +1,9 @@
 import AppKit
 import SwiftUI
 
-/// 単一インスタンスの diff ウィンドウを保持・表示する。
-/// macOS 14 では SwiftUI の `Window` Scene が起動時に自動で開くため、
-/// メニューバー常駐アプリとして AppKit で明示的に管理する。
+/// Holds and presents a single diff window instance.
+/// On macOS 14, SwiftUI's `Window` scene opens automatically at launch,
+/// so this class manages the window explicitly in AppKit for a menu-bar-resident app.
 @MainActor
 final class DiffWindowManager {
     static let shared = DiffWindowManager()

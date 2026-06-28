@@ -6,7 +6,7 @@ enum EditorField {
     case b
 }
 
-/// A/B 欄が互いの NSView を見つけるための共有ホルダ。weak 参照で循環を作らない。
+/// Shared holder that lets the A and B fields locate each other's NSView. Uses weak references to avoid retain cycles.
 final class FocusLink {
     weak var viewA: NSView?
     weak var viewB: NSView?
@@ -18,7 +18,7 @@ final class FocusLink {
         }
     }
 
-    /// 指定欄の相手をファーストレスポンダにする。相手が無ければ何もしない。
+    /// Makes the sibling of the specified field the first responder. Does nothing if there is no sibling.
     func focusSibling(of field: EditorField) {
         let target: NSView? = (field == .a) ? viewB : viewA
         guard let target else { return }
@@ -26,8 +26,8 @@ final class FocusLink {
     }
 }
 
-/// Tab/Shift+Tab を兄弟欄へのフォーカス移動に、Ctrl+Tab をタブ文字入力に振り替える
-/// NSTextView。IME 変換中（未確定文字あり）の Tab は横取りしない。
+/// An NSTextView that redirects Tab/Shift+Tab to focus-move between sibling fields and Ctrl+Tab to literal tab insertion.
+/// Does not intercept Tab while IME composition is active (i.e., when hasMarkedText() returns true).
 final class NavigatingTextView: NSTextView {
     var onFocusSibling: (() -> Void)?
 
@@ -50,8 +50,8 @@ final class NavigatingTextView: NSTextView {
     }
 }
 
-/// NSTextView をラップした入力欄。text を双方向同期し、選択（未選択ならカーソル直前の
-/// 1書記素）を onSelectionChange で報告する。Tab で兄弟欄へフォーカス移動する。
+/// An input field wrapping NSTextView. Bidirectionally syncs text and reports the current selection
+/// (or the one grapheme cluster before the cursor when nothing is selected) via onSelectionChange. Tab moves focus to the sibling field.
 struct CodePointTextView: NSViewRepresentable {
     @Binding var text: String
     let field: EditorField
@@ -96,13 +96,13 @@ struct CodePointTextView: NSViewRepresentable {
     }
 
     func updateNSView(_ nsView: NSScrollView, context: Context) {
-        // 最新のクロージャ/バインディングを Coordinator に反映する。
+        // Propagate the latest closure/binding to the Coordinator.
         context.coordinator.parent = self
         guard let textView = nsView.documentView as? NSTextView else { return }
         if textView.string != text {
-            // 注: text を外部から（ユーザー入力以外で）変更する機能を足す場合、ここでの
-            // string 代入が選択変更通知を同期発火し report() → @State 書き込みが
-            // ビュー更新中に走り得る。その際は report() を再入ガード/遅延する。
+            // Note: if you add the ability to change text externally (i.e., not from user input), the
+            // string assignment here synchronously fires a selection-change notification, which causes
+            // report() → @State writes to run during a view update. Guard against re-entry or defer report() in that case.
             textView.string = text
         }
     }
@@ -124,7 +124,7 @@ struct CodePointTextView: NSViewRepresentable {
             report(textView)
         }
 
-        /// 選択テキスト（未選択ならカーソル直前の1書記素）を報告する。
+        /// Reports the selected text, or the one grapheme cluster before the cursor when nothing is selected.
         private func report(_ textView: NSTextView) {
             let ns = textView.string as NSString
             let range = textView.selectedRange

@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// side-by-side の1セル。nil はギャップ（行なし）。
-/// 行全体の追加/削除はセル全幅を塗り、行内ハイライトは変更文字レンジのみ塗る。
+/// One cell in the side-by-side view. nil means a gap (no corresponding row).
+/// Whole-line additions/deletions fill the full cell width; intra-line highlights color only the changed character ranges.
 struct DiffCellView: View {
     let segments: [DiffSegment]?
 
@@ -14,26 +14,26 @@ struct DiffCellView: View {
     }
 
     private var fullWidthBackground: Color {
-        guard let segments else { return .gray.opacity(0.08) }   // ギャップ（行なし）
+        guard let segments else { return .gray.opacity(0.08) }   // gap (no row)
         if segments.count == 1 {
             switch segments[0].kind {
-            case .insert: return .green.opacity(0.3)              // 行全体追加
-            case .delete: return .red.opacity(0.3)               // 行全体削除
+            case .insert: return .green.opacity(0.3)              // whole-line addition
+            case .delete: return .red.opacity(0.3)               // whole-line deletion
             case .equal: return .clear
             }
         }
-        return .clear                                            // 行内ハイライト or 共通
+        return .clear                                            // intra-line highlight or common
     }
 
     private var displayText: AttributedString {
-        guard let segments else { return AttributedString(" ") } // ギャップ
+        guard let segments else { return AttributedString(" ") } // gap
         let joined = segments.map(\.text).joined()
-        if joined.isEmpty { return AttributedString(" ") }       // 空行の高さ確保
-        // 行全体の追加/削除は fullWidthBackground が塗るので素のテキスト。
+        if joined.isEmpty { return AttributedString(" ") }       // preserve height for empty lines
+        // Whole-line additions/deletions are colored by fullWidthBackground, so use plain text.
         if segments.count == 1, segments[0].kind != .equal {
             return AttributedString(joined)
         }
-        // 行内ハイライト: 変更文字レンジにのみ背景色。
+        // Intra-line highlight: apply background color only to changed character ranges.
         var result = AttributedString()
         for segment in segments {
             var piece = AttributedString(segment.text)
