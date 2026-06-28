@@ -13,15 +13,15 @@ struct DiffWindowView: View {
 
             HStack {
                 Picker("", selection: $orientation) {
-                    Text("左右").tag(SplitOrientation.horizontal)
-                    Text("上下").tag(SplitOrientation.vertical)
+                    Text("Horizontal").tag(SplitOrientation.horizontal)
+                    Text("Vertical").tag(SplitOrientation.vertical)
                 }
                 .pickerStyle(.segmented)
                 .fixedSize()
 
                 Spacer()
 
-                Button("実行") { run() }
+                Button("Compare") { run() }
                     .keyboardShortcut(.return, modifiers: .command)
             }
 
