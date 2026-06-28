@@ -23,7 +23,7 @@ targets:
       properties:
         LSUIElement: true
         CFBundleName: Delta
-        CFBundleDisplayName: Delta
+        CFBundleDisplayName: Delta Diff
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.capybara.delta

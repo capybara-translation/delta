@@ -6,11 +6,11 @@ struct DeltaApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
     var body: some Scene {
-        MenuBarExtra("Delta", systemImage: "doc.on.doc") {
-            Button("Open Diff Window") { DiffWindowManager.shared.show() }
+        MenuBarExtra("Delta Diff", systemImage: "doc.on.doc") {
+            Button("Open Delta Diff") { DiffWindowManager.shared.show() }
             SettingsLink { Text("Settings…") }
             Divider()
-            Button("Quit Delta") { NSApplication.shared.terminate(nil) }
+            Button("Quit Delta Diff") { NSApplication.shared.terminate(nil) }
                 .keyboardShortcut("q")
         }
         .menuBarExtraStyle(.menu)
