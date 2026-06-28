@@ -99,10 +99,10 @@ struct CodePointTextView: NSViewRepresentable {
         // Propagate the latest closure/binding to the Coordinator.
         context.coordinator.parent = self
         guard let textView = nsView.documentView as? NSTextView else { return }
-        if textView.string != text {
-            // Note: if you add the ability to change text externally (i.e., not from user input), the
-            // string assignment here synchronously fires a selection-change notification, which causes
-            // report() → @State writes to run during a view update. Guard against re-entry or defer report() in that case.
+        // Do not write back while IME composition is active: assigning `string` discards the
+        // marked (uncommitted) text and aborts composition, which breaks input when @AppStorage
+        // round-trips every keystroke through this update path. Skip until composition commits.
+        if textView.string != text, !textView.hasMarkedText() {
             textView.string = text
         }
     }
