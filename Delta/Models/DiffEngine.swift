@@ -15,13 +15,13 @@ struct DiffSegment: Equatable {
 }
 
 struct DiffRow: Equatable {
-    let left: [DiffSegment]?    // nil = この行は左に存在しない（ギャップ）
-    let right: [DiffSegment]?   // nil = この行は右に存在しない（ギャップ）
+    let left: [DiffSegment]?    // nil = this row does not exist on the left (gap)
+    let right: [DiffSegment]?   // nil = this row does not exist on the right (gap)
 }
 
-/// 正準等価ではなく Unicode スカラー列で一致を判定するトークン。
-/// Swift の String/Character の == は正準等価のため NFC/NFD 等を区別できない。
-/// diff の検出はこのトークンの == / hash（スカラー基準）で行う。
+/// Token that compares by Unicode scalar sequence rather than canonical equivalence.
+/// Swift's String/Character == uses canonical equivalence and cannot distinguish NFC/NFD etc.
+/// Diff detection uses this token's == / hash (scalar-based).
 private struct ExactToken: Hashable {
     let text: String
     static func == (lhs: ExactToken, rhs: ExactToken) -> Bool {
@@ -39,9 +39,9 @@ enum DiffEngine {
         return align(a, b)
     }
 
-    /// 行モードは改行を維持するため空サブシーケンスを残す。
-    /// 文字モードは書記素クラスタ（Swift Character）単位でトークン化する。
-    /// 比較は ExactToken により Unicode スカラー列で行う（正準等価では判定しない）。
+    /// Line mode retains empty subsequences to preserve newlines.
+    /// Character mode tokenizes by grapheme cluster (Swift Character).
+    /// Comparison is performed by ExactToken via Unicode scalar sequence (not canonical equivalence).
     private static func tokenize(_ text: String, mode: DiffMode) -> [ExactToken] {
         switch mode {
         case .line:
@@ -52,12 +52,12 @@ enum DiffEngine {
         }
     }
 
-    /// CollectionDifference の removals/insertions から、
-    /// 削除→挿入→共通の順で 1 列のユニファイドなセグメント列を再構成する。
+    /// Reconstructs a unified segment list in delete→insert→equal order
+    /// from CollectionDifference's removals/insertions.
     ///
-    /// 不変条件: 変更ブロック内では必ず削除群が挿入群より先に出る（削除判定を
-    /// 挿入判定より前に行うため）。`sideBySide` はこの順序に依存して削除/挿入を
-    /// ペアリングするので、この分岐順を変えないこと。
+    /// Invariant: within a change block, deletions always appear before insertions (because
+    /// the delete branch is checked before the insert branch). `sideBySide` relies on this
+    /// ordering to pair deletions with insertions — do not change the branch order.
     private static func align(_ a: [ExactToken], _ b: [ExactToken]) -> [DiffSegment] {
         let difference = b.difference(from: a)
         var removedOffsets = Set<Int>()
@@ -96,10 +96,10 @@ enum DiffEngine {
 
     // MARK: - Side-by-side
 
-    /// 行揃えの行ペア列を生成する。
-    /// 1. 行 diff（既存）でユニファイドな行セグメント列を得る。
-    /// 2. 連続する削除群と直後の挿入群をペアにし、各ペアは文字 diff（既存）で行内ハイライトを付ける。
-    ///    余った削除/挿入は片側のみの行にする。
+    /// Produces the line-pair sequence for line-aligned display.
+    /// 1. Obtains a unified line-segment list via the existing line diff.
+    /// 2. Pairs each run of consecutive deletions with the immediately following insertions; each pair
+    ///    receives intra-line highlights via the existing character diff. Leftover deletions/insertions become single-sided rows.
     static func sideBySide(_ textA: String, _ textB: String) -> [DiffRow] {
         let lineSegments = diff(textA, textB, mode: .line)
         var rows: [DiffRow] = []
@@ -137,8 +137,8 @@ enum DiffEngine {
         return rows
     }
 
-    /// 削除行群と挿入行群を index 順にペアリングする。
-    /// ペアは文字 diff で行内ハイライト、余りは片側のみの行。
+    /// Pairs the group of deleted lines with the group of inserted lines in index order.
+    /// Paired lines receive intra-line highlights via character diff; extras become single-sided rows.
     private static func pairRows(deletes: [String], inserts: [String]) -> [DiffRow] {
         var rows: [DiffRow] = []
         let pairCount = min(deletes.count, inserts.count)

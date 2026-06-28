@@ -11,12 +11,12 @@ struct CodePointFormatterTests {
     }
 
     @Test func singleNFCVietnameseHasName() {
-        // NFC「ờ」= U+1EDD（1スカラー）→ 名前併記
+        // NFC "ờ" = U+1EDD (1 scalar) → name appended
         #expect(CodePointFormatter.describe("\u{1EDD}") == "U+1EDD LATIN SMALL LETTER O WITH HORN AND GRAVE")
     }
 
     @Test func nfdVietnameseListsScalars() {
-        // NFD「ờ」= o + 結合ホーン + 結合グレーブ（3スカラー）→ 名前なし
+        // NFD "ờ" = o + combining horn + combining grave (3 scalars) → no name
         #expect(CodePointFormatter.describe("\u{006F}\u{031B}\u{0300}") == "U+006F U+031B U+0300")
     }
 
@@ -31,17 +31,17 @@ struct CodePointFormatterTests {
     }
 
     @Test func astralScalarHasFiveDigitHexAndName() {
-        // U+1F600 は5桁16進。1スカラーなので名前併記。
+        // U+1F600 has a 5-digit hex code. One scalar, so the name is appended.
         #expect(CodePointFormatter.describe("\u{1F600}") == "U+1F600 GRINNING FACE")
     }
 
     @Test func controlScalarHasNoName() {
-        // U+0001 は名前を持たない制御文字 → コードポイントのみ。
+        // U+0001 is a control character with no name → code point only.
         #expect(CodePointFormatter.describe("\u{0001}") == "U+0001")
     }
 
     @Test func exactlyMaxScalarsHasNoOverflowSuffix() {
-        // ちょうど24スカラーは打ち切りサフィックスを付けない。
+        // Exactly 24 scalars should not produce a truncation suffix.
         let r = CodePointFormatter.describe(String(repeating: "a", count: 24))
         let expected = Array(repeating: "U+0061", count: 24).joined(separator: " ")
         #expect(r == expected)

@@ -5,15 +5,15 @@ enum SplitOrientation: String {
     case vertical
 }
 
-/// 行揃えの side-by-side 表示。
-/// horizontal: 各行を HStack(左セル, 右セル) で並べ行内で高さを揃える。区切り線は
-///   結果領域の中央に全高でオーバーレイし、画面下端まで伸ばす（行数に依存しない）。
-/// vertical: 左ペイン（全行の左セル）を上、右ペインを下に積む。
+/// Line-aligned side-by-side view.
+/// horizontal: arranges each row as HStack(left cell, right cell) to equalize height within a row. The divider is
+///   overlaid at the center of the result area spanning the full height, extending to the bottom of the screen (independent of row count).
+/// vertical: stacks the left pane (all rows' left cells) above the right pane.
 struct SplitDiffView: View {
     let rows: [DiffRow]
     let orientation: SplitOrientation
 
-    /// 中央区切り線まわりのガター幅（テキストが線に接しないようにする）。
+    /// Gutter width around the center divider (keeps text from touching the line).
     private let centerGutter: CGFloat = 6
 
     var body: some View {
@@ -34,7 +34,7 @@ struct SplitDiffView: View {
                     .frame(maxWidth: .infinity, alignment: .topLeading)
                 }
                 .overlay {
-                    // 中央に全高の縦区切り線（ビューポートに固定、スクロールしても途切れない）。
+                    // Full-height vertical divider fixed at center (viewport-anchored, does not scroll away).
                     HStack(spacing: 0) {
                         Spacer(minLength: 0)
                         Divider()

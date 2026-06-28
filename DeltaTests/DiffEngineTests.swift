@@ -154,7 +154,7 @@ struct DiffEngineTests {
     }
 
     @Test func sideBySideMoreDeletesThanInserts() {
-        // A=["a","b","c"], B=["x"]; 行 diff: [del a, del b, del c, ins x]
+        // A=["a","b","c"], B=["x"]; line diff: [del a, del b, del c, ins x]
         let r = DiffEngine.sideBySide("a\nb\nc", "x")
         #expect(r == [
             DiffRow(left: [DiffSegment(kind: .delete, text: "a")], right: [DiffSegment(kind: .insert, text: "x")]),
@@ -164,7 +164,7 @@ struct DiffEngineTests {
     }
 
     @Test func sideBySideMoreInsertsThanDeletes() {
-        // A=["a"], B=["x","y","z"]; 行 diff: [del a, ins x, ins y, ins z]
+        // A=["a"], B=["x","y","z"]; line diff: [del a, ins x, ins y, ins z]
         let r = DiffEngine.sideBySide("a", "x\ny\nz")
         #expect(r == [
             DiffRow(left: [DiffSegment(kind: .delete, text: "a")], right: [DiffSegment(kind: .insert, text: "x")]),
@@ -174,7 +174,7 @@ struct DiffEngineTests {
     }
 
     @Test func sideBySideTrailingNewline() {
-        // "a\n"->["a",""], "a"->["a"]; 行 diff [equal a, delete ""]
+        // "a\n"->["a",""], "a"->["a"]; line diff: [equal a, delete ""]
         let r = DiffEngine.sideBySide("a\n", "a")
         #expect(r == [
             DiffRow(left: [DiffSegment(kind: .equal, text: "a")], right: [DiffSegment(kind: .equal, text: "a")]),
@@ -189,11 +189,11 @@ struct DiffEngineTests {
         ])
     }
 
-    // MARK: - スカラー敏感（符号化差の検出）
+    // MARK: - Scalar-sensitive (encoding difference detection)
 
     @Test func characterDiffDetectsNFCvsNFD() {
-        // NFC「ờ」= U+1EDD（1スカラー）, NFD「ờ」= U+006F U+031B U+0300（3スカラー）。
-        // 正準等価だが符号化が違うので、スカラー比較では差分になる。
+        // NFC "ờ" = U+1EDD (1 scalar), NFD "ờ" = U+006F U+031B U+0300 (3 scalars).
+        // They are canonically equivalent but encoded differently, so scalar comparison produces a diff.
         let nfc = "\u{1EDD}"
         let nfd = "\u{006F}\u{031B}\u{0300}"
         let r = DiffEngine.diff(nfc, nfd, mode: .character)
@@ -204,7 +204,7 @@ struct DiffEngineTests {
     }
 
     @Test func sideBySideDetectsNFCvsNFD() {
-        // 1行中で「ờ」だけ符号化が違う。行も符号化敏感に検出され、行内で「ờ」がハイライトされる。
+        // Only the encoding of "ờ" differs within the line. The line is detected as changed (encoding-sensitive), and "ờ" is highlighted intra-line.
         let nfc = "\u{1EDD}"
         let nfd = "\u{006F}\u{031B}\u{0300}"
         let r = DiffEngine.sideBySide("A" + nfc + "B", "A" + nfd + "B")
@@ -225,7 +225,7 @@ struct DiffEngineTests {
     }
 
     @Test func identicalScalarsStillEqual() {
-        // 同じスカラー列は引き続き差分なし（リグレッション確認）。
+        // Identical scalar sequences continue to produce no diff (regression check).
         let r = DiffEngine.diff("abc", "abc", mode: .character)
         #expect(r == [
             DiffSegment(kind: .equal, text: "a"),
