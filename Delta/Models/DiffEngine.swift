@@ -19,6 +19,19 @@ struct DiffRow: Equatable {
     let right: [DiffSegment]?   // nil = この行は右に存在しない（ギャップ）
 }
 
+/// 正準等価ではなく Unicode スカラー列で一致を判定するトークン。
+/// Swift の String/Character の == は正準等価のため NFC/NFD 等を区別できない。
+/// diff の検出はこのトークンの == / hash（スカラー基準）で行う。
+private struct ExactToken: Hashable {
+    let text: String
+    static func == (lhs: ExactToken, rhs: ExactToken) -> Bool {
+        lhs.text.unicodeScalars.elementsEqual(rhs.text.unicodeScalars)
+    }
+    func hash(into hasher: inout Hasher) {
+        for scalar in text.unicodeScalars { hasher.combine(scalar.value) }
+    }
+}
+
 enum DiffEngine {
     static func diff(_ textA: String, _ textB: String, mode: DiffMode) -> [DiffSegment] {
         let a = tokenize(textA, mode: mode)
@@ -28,12 +41,14 @@ enum DiffEngine {
 
     /// 行モードは改行を維持するため空サブシーケンスを残す。
     /// 文字モードは書記素クラスタ（Swift Character）単位でトークン化する。
-    static func tokenize(_ text: String, mode: DiffMode) -> [String] {
+    /// 比較は ExactToken により Unicode スカラー列で行う（正準等価では判定しない）。
+    private static func tokenize(_ text: String, mode: DiffMode) -> [ExactToken] {
         switch mode {
         case .line:
-            return text.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
+            return text.split(separator: "\n", omittingEmptySubsequences: false)
+                .map { ExactToken(text: String($0)) }
         case .character:
-            return text.map(String.init)
+            return text.map { ExactToken(text: String($0)) }
         }
     }
 
@@ -43,7 +58,7 @@ enum DiffEngine {
     /// 不変条件: 変更ブロック内では必ず削除群が挿入群より先に出る（削除判定を
     /// 挿入判定より前に行うため）。`sideBySide` はこの順序に依存して削除/挿入を
     /// ペアリングするので、この分岐順を変えないこと。
-    static func align(_ a: [String], _ b: [String]) -> [DiffSegment] {
+    private static func align(_ a: [ExactToken], _ b: [ExactToken]) -> [DiffSegment] {
         let difference = b.difference(from: a)
         var removedOffsets = Set<Int>()
         var insertedOffsets = Set<Int>()
@@ -59,20 +74,20 @@ enum DiffEngine {
         var j = 0
         while i < a.count || j < b.count {
             if i < a.count, removedOffsets.contains(i) {
-                segments.append(DiffSegment(kind: .delete, text: a[i]))
+                segments.append(DiffSegment(kind: .delete, text: a[i].text))
                 i += 1
             } else if j < b.count, insertedOffsets.contains(j) {
-                segments.append(DiffSegment(kind: .insert, text: b[j]))
+                segments.append(DiffSegment(kind: .insert, text: b[j].text))
                 j += 1
             } else if i < a.count, j < b.count {
-                segments.append(DiffSegment(kind: .equal, text: a[i]))
+                segments.append(DiffSegment(kind: .equal, text: a[i].text))
                 i += 1
                 j += 1
             } else if i < a.count {
-                segments.append(DiffSegment(kind: .delete, text: a[i]))
+                segments.append(DiffSegment(kind: .delete, text: a[i].text))
                 i += 1
             } else {
-                segments.append(DiffSegment(kind: .insert, text: b[j]))
+                segments.append(DiffSegment(kind: .insert, text: b[j].text))
                 j += 1
             }
         }
