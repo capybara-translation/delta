@@ -1,15 +1,17 @@
 import AppKit
 import SwiftUI
 
-/// Holds and presents a single diff window instance.
-/// On macOS 14, SwiftUI's `Window` scene opens automatically at launch,
-/// so this class manages the window explicitly in AppKit for a menu-bar-resident app.
+/// Holds and presents a single diff window instance, and switches the app's
+/// activation policy so it appears in Cmd+Tab and the Dock only while the
+/// window is visible (otherwise it stays a menu-bar accessory).
 @MainActor
-final class DiffWindowManager {
+final class DiffWindowManager: NSObject, NSWindowDelegate {
     static let shared = DiffWindowManager()
     private var window: NSWindow?
 
-    private init() {}
+    private override init() {
+        super.init()
+    }
 
     func show() {
         if window == nil {
@@ -20,13 +22,14 @@ final class DiffWindowManager {
             newWindow.setContentSize(NSSize(width: 540, height: 480))
             newWindow.isReleasedWhenClosed = false
             newWindow.center()
+            newWindow.delegate = self
             window = newWindow
         }
+        // Become a regular app while the window is visible so it shows in Cmd+Tab and the Dock.
+        NSApp.setActivationPolicy(.regular)
         window?.makeKeyAndOrderFront(nil)
         // Force activation so the window comes to the front from BOTH the global
-        // hotkey (background) and the menu-bar item. The cooperative no-arg
-        // activate() is ignored in the menu-action context for an accessory app,
-        // leaving the window behind the previously-active app.
+        // hotkey (background) and the menu-bar item.
         NSApplication.shared.activate(ignoringOtherApps: true)
     }
 
@@ -34,9 +37,21 @@ final class DiffWindowManager {
     /// otherwise shows and activates it (creating it on first use via show()).
     func toggle() {
         if let window, window.isVisible, window.isKeyWindow {
-            window.orderOut(nil)
+            hide()
         } else {
             show()
         }
+    }
+
+    /// Hides the window via orderOut and returns to a menu-bar accessory.
+    /// (orderOut does not fire windowWillClose, so the policy is reset here.)
+    private func hide() {
+        window?.orderOut(nil)
+        NSApp.setActivationPolicy(.accessory)
+    }
+
+    // Closing the window (red button / ⌘W) returns to a menu-bar accessory.
+    func windowWillClose(_ notification: Notification) {
+        NSApp.setActivationPolicy(.accessory)
     }
 }
