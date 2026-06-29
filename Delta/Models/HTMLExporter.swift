@@ -23,8 +23,8 @@ enum HTMLExporter {
         <meta charset="utf-8">
         <title>Delta Diff</title>
         <style>
-        body { font-family: ui-monospace, Menlo, monospace; margin: 16px; }
-        .meta { color: #666; font-size: 12px; margin-bottom: 12px; }
+        body { font-family: ui-monospace, Menlo, monospace; margin: 0; padding: 16px; box-sizing: border-box; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; }
+        .meta { color: #666; font-size: 12px; margin: 0 0 12px; }
         table.diff { border-collapse: collapse; width: 100%; }
         table.diff td { vertical-align: top; width: 50%; padding: 0 6px; border-left: 1px solid #ddd; white-space: pre; }
         .pane { border-bottom: 1px solid #ddd; padding: 6px 0; }
