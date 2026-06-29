@@ -6,3 +6,5 @@ Delta/Info.plist
 *.xcuserstate
 xcuserdata/
 .swiftpm/
+build-release/
+dist/
