@@ -27,18 +27,24 @@ encoding differences (e.g. NFC vs NFD) that look identical on screen.
 
 ## Install
 
-Download `Delta-Diff.zip` from the [latest release](../../releases/latest),
-unzip it, and move `Delta Diff.app` to `/Applications`.
+1. Download `Delta-Diff.zip` from the [latest release](../../releases/latest)
+   and unzip it.
 
-The app is distributed for free and is **not notarized**, so on first launch
-macOS Gatekeeper blocks it. Clear the quarantine attribute once:
+2. Move `Delta Diff.app` to `/Applications`.
 
-```bash
-xattr -dr com.apple.quarantine "/Applications/Delta Diff.app"
-```
+3. The app is distributed for free and is **not notarized**, so on first launch
+   macOS Gatekeeper blocks it. Clear the quarantine attribute once:
 
-Alternatively, double-click the app, dismiss the warning, then open
-**System Settings → Privacy & Security** and click **Open Anyway**.
+   ```bash
+   xattr -dr com.apple.quarantine "/Applications/Delta Diff.app"
+   ```
+
+4. Launch the app (double-click `Delta Diff.app`, or run
+   `open "/Applications/Delta Diff.app"`). A Delta (δ) icon appears in the menu
+   bar.
+
+5. Click the Delta (δ) icon in the menu bar and choose **Open Delta Diff**. The
+   diff window opens, ready for you to paste and compare two pieces of text.
 
 To build it yourself instead, see the developer instructions below.
 
