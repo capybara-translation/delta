@@ -7,17 +7,31 @@ struct DeltaApp: App {
 
     var body: some Scene {
         MenuBarExtra("Delta Diff", systemImage: "doc.on.doc") {
-            Button("Open Delta Diff") { DiffWindowManager.shared.show() }
-            SettingsLink { Text("Settings…") }
-            Divider()
-            Button("Quit Delta Diff") { NSApplication.shared.terminate(nil) }
-                .keyboardShortcut("q")
+            MenuContent()
         }
         .menuBarExtraStyle(.menu)
 
         Settings {
             SettingsView()
         }
+    }
+}
+
+/// Menu-bar menu content. Extracted into a View so it can use the `openSettings`
+/// environment action: an accessory (LSUIElement) app must be activated first, or
+/// the Settings window opens behind everything and appears not to show.
+private struct MenuContent: View {
+    @Environment(\.openSettings) private var openSettings
+
+    var body: some View {
+        Button("Open Delta Diff") { DiffWindowManager.shared.show() }
+        Button("Settings…") {
+            NSApplication.shared.activate(ignoringOtherApps: true)
+            openSettings()
+        }
+        Divider()
+        Button("Quit Delta Diff") { NSApplication.shared.terminate(nil) }
+            .keyboardShortcut("q")
     }
 }
 
