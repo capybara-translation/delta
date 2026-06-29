@@ -27,6 +27,14 @@ final class DiffWindowManager: NSObject, NSWindowDelegate {
         }
         // Become a regular app while the window is visible so it shows in Cmd+Tab and the Dock.
         NSApp.setActivationPolicy(.regular)
+        // Promoting an accessory app to .regular at runtime can leave the Dock /
+        // Cmd+Tab showing a generic placeholder icon (it does not always read the
+        // bundle's AppIcon at promotion time). Assign the real icon explicitly,
+        // AFTER the policy change. Use the dedicated high-resolution "DockIcon"
+        // image (1024px) rather than the bundle's resolved icon, whose loose
+        // AppIcon.icns tops out at 128px and looks blurry when scaled up.
+        NSApp.applicationIconImage = NSImage(named: "DockIcon")
+            ?? NSWorkspace.shared.icon(forFile: Bundle.main.bundlePath)
         window?.makeKeyAndOrderFront(nil)
         // Force activation so the window comes to the front from BOTH the global
         // hotkey (background) and the menu-bar item.
