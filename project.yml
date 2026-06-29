@@ -24,6 +24,8 @@ targets:
         LSUIElement: true
         CFBundleName: Delta
         CFBundleDisplayName: Delta Diff
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.capybara.delta
