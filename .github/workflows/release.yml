@@ -1,0 +1,43 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Build distributable zip
+        run: ./scripts/package.sh
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          notes=$(cat <<'EOF'
+          A lightweight menu-bar diff tool for macOS.
+
+          This is a free, un-notarized build. After downloading, move **Delta Diff.app** to `/Applications`, then clear the quarantine attribute once:
+
+          ```
+          xattr -dr com.apple.quarantine "/Applications/Delta Diff.app"
+          ```
+
+          Or open **System Settings → Privacy & Security** and click **Open Anyway**.
+          EOF
+          )
+          gh release create "${GITHUB_REF_NAME}" "dist/Delta-Diff.zip" \
+            --title "${GITHUB_REF_NAME}" \
+            --notes "$notes"
