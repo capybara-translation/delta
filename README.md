@@ -23,7 +23,24 @@ encoding differences (e.g. NFC vs NFD) that look identical on screen.
 - **Keyboard-friendly** — `Tab` / `Shift+Tab` move focus between the two input
   boxes, `Ctrl+Tab` inserts a literal tab, and `Cmd+Return` runs the compare.
 
-## Requirements
+## Install
+
+Download `Delta-Diff.zip` from the [latest release](../../releases/latest),
+unzip it, and move `Delta Diff.app` to `/Applications`.
+
+The app is distributed for free and is **not notarized**, so on first launch
+macOS Gatekeeper blocks it. Clear the quarantine attribute once:
+
+```bash
+xattr -dr com.apple.quarantine "/Applications/Delta Diff.app"
+```
+
+Alternatively, double-click the app, dismiss the warning, then open
+**System Settings → Privacy & Security** and click **Open Anyway**.
+
+To build it yourself instead, see the developer instructions below.
+
+## Requirements (to build from source)
 
 - macOS 14 (Sonoma) or later
 - Xcode (at `/Applications/Xcode.app`)
