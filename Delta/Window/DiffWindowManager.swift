@@ -23,7 +23,11 @@ final class DiffWindowManager {
             window = newWindow
         }
         window?.makeKeyAndOrderFront(nil)
-        NSApplication.shared.activate()
+        // Force activation so the window comes to the front from BOTH the global
+        // hotkey (background) and the menu-bar item. The cooperative no-arg
+        // activate() is ignored in the menu-action context for an accessory app,
+        // leaving the window behind the previously-active app.
+        NSApplication.shared.activate(ignoringOtherApps: true)
     }
 
     /// Toggles the window: hides it when it is the frontmost key window,
