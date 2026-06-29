@@ -1,5 +1,7 @@
 # Delta Diff
 
+[![CI](https://github.com/capybara-translation/delta/actions/workflows/ci.yml/badge.svg)](https://github.com/capybara-translation/delta/actions/workflows/ci.yml)
+
 A lightweight menu-bar diff tool for macOS. Open a small window from the menu
 bar, paste two pieces of text, and see a color-coded difference — without
 launching a full editor or reaching for the command line.
