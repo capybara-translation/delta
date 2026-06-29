@@ -72,8 +72,8 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
 open build/Build/Products/Debug/Delta.app
 ```
 
-Choose "Open Delta Diff" from the document icon (`doc.on.doc`, an SF Symbol)
-in the menu bar to open the window.
+Choose "Open Delta Diff" from the Delta (δ) icon in the menu bar to open the
+window.
 
 ## Test
 

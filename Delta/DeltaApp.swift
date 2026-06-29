@@ -6,7 +6,7 @@ struct DeltaApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
     var body: some Scene {
-        MenuBarExtra("Delta Diff", systemImage: "doc.on.doc") {
+        MenuBarExtra("Delta Diff", image: "MenuBarIcon") {
             MenuContent()
         }
         .menuBarExtraStyle(.menu)

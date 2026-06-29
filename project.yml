@@ -29,6 +29,7 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.capybara.delta
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
   DeltaTests:
     type: bundle.unit-test
     platform: macOS
