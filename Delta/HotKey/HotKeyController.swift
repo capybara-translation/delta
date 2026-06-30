@@ -44,6 +44,19 @@ final class HotKeyController {
         return true
     }
 
+    /// Temporarily unregister the live hotkey (e.g. while the user is recording a
+    /// new one) without changing or persisting the config. Pair with `resume()`.
+    func suspend() {
+        hotKey = nil
+    }
+
+    /// Re-register the current binding after a `suspend()`, if enabled. Does not
+    /// persist. No-op if a registration is already live or the binding is disabled.
+    func resume() {
+        guard config.isEnabled, hotKey == nil else { return }
+        hotKey = makeHotKey(for: config)
+    }
+
     private func makeHotKey(for config: HotKeyConfig) -> GlobalHotKey? {
         GlobalHotKey(keyCode: config.keyCode, modifiers: config.modifiers) {
             DiffWindowManager.shared.toggle()

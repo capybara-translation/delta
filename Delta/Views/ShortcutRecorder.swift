@@ -3,10 +3,19 @@ import SwiftUI
 import Carbon
 
 /// A push-button that records a key combination: click to start, then press the
-/// desired keys. Escape cancels. A combination without Command/Control/Option is
-/// rejected with a beep (recording continues).
+/// desired keys. Escape (or losing focus) cancels. A combination without
+/// Command/Control/Option is rejected with a beep (recording continues).
+///
+/// While recording, the live global hotkey must be paused so it does not intercept
+/// the very keys being typed (a Carbon hotkey swallows its combo system-wide).
+/// `onRecordingStart` fires when recording begins, `onCancel` when it ends without
+/// a capture; the caller pauses/resumes the hotkey accordingly. On a successful
+/// capture the caller applies the new binding (which re-registers), so `onCancel`
+/// is deliberately NOT fired in that case.
 final class RecorderButton: NSButton {
     var onCapture: ((UInt32, UInt32) -> Void)?
+    var onRecordingStart: (() -> Void)?
+    var onCancel: (() -> Void)?
     var shortcutTitle: String = "" {
         didSet { if !recording { title = shortcutTitle } }
     }
@@ -28,8 +37,9 @@ final class RecorderButton: NSButton {
     override var acceptsFirstResponder: Bool { isEnabled }
 
     @objc private func startRecording() {
-        guard isEnabled else { return }
+        guard isEnabled, !recording else { return }
         recording = true
+        onRecordingStart?()   // pause the live hotkey while recording
         window?.makeFirstResponder(self)
     }
 
@@ -37,7 +47,7 @@ final class RecorderButton: NSButton {
         guard recording else { super.keyDown(with: event); return }
 
         if event.keyCode == UInt16(kVK_Escape) {
-            stopRecording()
+            cancelRecording()
             return
         }
 
@@ -49,18 +59,25 @@ final class RecorderButton: NSButton {
             return
         }
 
+        // Capture: the caller applies the new binding (which re-registers the
+        // hotkey), so end recording WITHOUT firing onCancel.
+        recording = false
         onCapture?(UInt32(event.keyCode), carbon)
-        stopRecording()
+        window?.makeFirstResponder(nil)
     }
 
     override func resignFirstResponder() -> Bool {
-        recording = false
+        // Focus lost while still recording (e.g. clicked elsewhere): treat as cancel.
+        if recording { cancelRecording() }
         return super.resignFirstResponder()
     }
 
-    private func stopRecording() {
+    /// End recording without capturing: restore the previously live hotkey.
+    private func cancelRecording() {
+        guard recording else { return }
         recording = false
-        window?.makeFirstResponder(nil)
+        onCancel?()
+        if window?.firstResponder === self { window?.makeFirstResponder(nil) }
     }
 }
 
@@ -69,18 +86,24 @@ struct ShortcutRecorder: NSViewRepresentable {
     let displayString: String
     let isEnabled: Bool
     let onCapture: (UInt32, UInt32) -> Void
+    var onRecordingStart: (() -> Void)? = nil
+    var onCancel: (() -> Void)? = nil
 
     func makeNSView(context: Context) -> RecorderButton {
         let button = RecorderButton()
-        button.shortcutTitle = displayString
-        button.isEnabled = isEnabled
-        button.onCapture = onCapture
+        configure(button)
         return button
     }
 
     func updateNSView(_ nsView: RecorderButton, context: Context) {
-        nsView.shortcutTitle = displayString
-        nsView.isEnabled = isEnabled
-        nsView.onCapture = onCapture
+        configure(nsView)
+    }
+
+    private func configure(_ button: RecorderButton) {
+        button.shortcutTitle = displayString
+        button.isEnabled = isEnabled
+        button.onCapture = onCapture
+        button.onRecordingStart = onRecordingStart
+        button.onCancel = onCancel
     }
 }

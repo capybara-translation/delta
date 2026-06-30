@@ -40,7 +40,11 @@ struct SettingsView: View {
                         applyHotKey(HotKeyConfig(keyCode: keyCode,
                                                  modifiers: modifiers,
                                                  isEnabled: true))
-                    }
+                    },
+                    // Pause the live hotkey while recording so it can't intercept
+                    // the keys being typed; resume it if recording is cancelled.
+                    onRecordingStart: { HotKeyController.shared.suspend() },
+                    onCancel: { HotKeyController.shared.resume() }
                 )
                 .frame(width: 140)
                 .disabled(!hotKey.isEnabled)
