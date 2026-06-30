@@ -23,10 +23,14 @@ enum HTMLExporter {
         <meta charset="utf-8">
         <title>Delta Diff</title>
         <style>
-        body { font-family: ui-monospace, Menlo, monospace; margin: 0; padding: 16px; box-sizing: border-box; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; }
+        body { font-family: ui-monospace, Menlo, monospace; margin: 0; padding: 16px; box-sizing: border-box; min-height: 100vh; display: flex; }
+        /* margin:auto centers the content block on both axes; when it is taller or
+           wider than the viewport the auto margins collapse to 0, so the top/left
+           is never clipped and the page just scrolls. */
+        .content { margin: auto; }
         .meta { color: #666; font-size: 12px; margin: 0 0 12px; }
-        table.diff { border-collapse: collapse; width: 100%; }
-        table.diff td { vertical-align: top; width: 50%; padding: 0 6px; border-left: 1px solid #ddd; white-space: pre; }
+        table.diff { border-collapse: collapse; }
+        table.diff td { vertical-align: top; padding: 0 6px; border-left: 1px solid #ddd; white-space: pre; }
         .pane { border-bottom: 1px solid #ddd; padding: 6px 0; }
         .line { white-space: pre; }
         .ins { background: #ccffd8; }
@@ -35,8 +39,10 @@ enum HTMLExporter {
         </style>
         </head>
         <body>
+        <div class="content">
         <p class="meta">\(escape(meta))</p>
         \(body)
+        </div>
         </body>
         </html>
         """
