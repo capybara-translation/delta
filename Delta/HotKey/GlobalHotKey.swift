@@ -9,7 +9,7 @@ final class GlobalHotKey {
     private var eventHandlerRef: EventHandlerRef?
     private let handler: () -> Void
 
-    init(keyCode: UInt32, modifiers: UInt32, handler: @escaping () -> Void) {
+    init?(keyCode: UInt32, modifiers: UInt32, handler: @escaping () -> Void) {
         self.handler = handler
 
         var eventType = EventTypeSpec(
@@ -17,7 +17,7 @@ final class GlobalHotKey {
             eventKind: UInt32(kEventHotKeyPressed)
         )
         let selfPtr = Unmanaged.passUnretained(self).toOpaque()
-        _ = InstallEventHandler(
+        let installStatus = InstallEventHandler(
             GetApplicationEventTarget(),
             { _, _, userData -> OSStatus in
                 guard let userData else { return noErr }
@@ -30,10 +30,11 @@ final class GlobalHotKey {
             selfPtr,
             &eventHandlerRef
         )
+        guard installStatus == noErr else { return nil }
 
         // Signature 'DELT' (0x44454C54) keeps this hotkey id distinct.
         let hotKeyID = EventHotKeyID(signature: OSType(0x44454C54), id: 1)
-        _ = RegisterEventHotKey(
+        let registerStatus = RegisterEventHotKey(
             keyCode,
             modifiers,
             hotKeyID,
@@ -41,6 +42,10 @@ final class GlobalHotKey {
             0,
             &hotKeyRef
         )
+        guard registerStatus == noErr else {
+            if let eventHandlerRef { RemoveEventHandler(eventHandlerRef) }
+            return nil
+        }
     }
 
     deinit {
