@@ -1,5 +1,4 @@
 import SwiftUI
-import Carbon
 
 @main
 struct DeltaApp: App {
@@ -35,19 +34,12 @@ private struct MenuContent: View {
     }
 }
 
-/// Registers the global hotkey (⌃⌥D) at launch, retains it for the app's lifetime,
-/// and clears persisted text at launch when text retention is off.
+/// Registers the global hotkey at launch via HotKeyController, and clears persisted
+/// text at launch when text retention is off.
 final class AppDelegate: NSObject, NSApplicationDelegate {
-    private var hotKey: GlobalHotKey?
-
     func applicationDidFinishLaunching(_ notification: Notification) {
         clearTextIfNeeded()
-        hotKey = GlobalHotKey(
-            keyCode: UInt32(kVK_ANSI_D),
-            modifiers: UInt32(controlKey | optionKey)
-        ) {
-            DiffWindowManager.shared.toggle()
-        }
+        HotKeyController.shared.start()
     }
 
     /// When "keep text between launches" is off, start each launch with empty input.
