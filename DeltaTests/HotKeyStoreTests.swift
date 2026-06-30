@@ -32,4 +32,16 @@ struct HotKeyStoreTests {
         // no enabled key set
         #expect(HotKeyStore.load(from: d).isEnabled)
     }
+
+    @Test func loadReturnsDefaultWhenOnlyKeyCodePresent() {
+        let d = freshDefaults()
+        d.set(Int(kVK_ANSI_K), forKey: "hotKeyKeyCode")
+        #expect(HotKeyStore.load(from: d) == .default)
+    }
+
+    @Test func loadReturnsDefaultWhenOnlyModifiersPresent() {
+        let d = freshDefaults()
+        d.set(Int(cmdKey), forKey: "hotKeyModifiers")
+        #expect(HotKeyStore.load(from: d) == .default)
+    }
 }
