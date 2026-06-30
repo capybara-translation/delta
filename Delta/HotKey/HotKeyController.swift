@@ -14,16 +14,23 @@ final class HotKeyController {
         config = HotKeyStore.load()
     }
 
-    /// Call once at launch to register the persisted binding (if enabled).
+    /// Call once at launch to register the persisted binding (if enabled and valid).
+    /// `hasRequiredModifier` guards against a tampered/legacy preference that stored
+    /// a modifier-less binding, which would otherwise hijack a bare key system-wide.
     func start() {
-        if config.isEnabled { hotKey = makeHotKey(for: config) }
+        if config.isEnabled, config.hasRequiredModifier { hotKey = makeHotKey(for: config) }
     }
 
     /// Apply a new binding. Returns true on success (registered, or disabled and
-    /// saved); false if registration failed, in which case the previous binding
-    /// is restored and nothing is persisted.
+    /// saved); false if the binding is invalid (an enabled binding without a
+    /// required modifier) or registration failed, in which case the previous
+    /// binding is left untouched and nothing is persisted.
     @discardableResult
     func apply(_ new: HotKeyConfig) -> Bool {
+        // Reject an enabled binding that lacks ⌘/⌃/⌥: registering a modifier-less
+        // hotkey would swallow every press of that key across the system.
+        guard !new.isEnabled || new.hasRequiredModifier else { return false }
+
         let previous = config
 
         // Tear down the current registration first so the hotkey id / combo is free.
@@ -51,10 +58,14 @@ final class HotKeyController {
     }
 
     /// Re-register the current binding after a `suspend()`, if enabled. Does not
-    /// persist. No-op if a registration is already live or the binding is disabled.
-    func resume() {
-        guard config.isEnabled, hotKey == nil else { return }
+    /// persist. Returns true when the hotkey is live afterwards (including the
+    /// no-op cases: disabled, or already registered); false if re-registration
+    /// was attempted and failed (e.g. another process grabbed the combo).
+    @discardableResult
+    func resume() -> Bool {
+        guard config.isEnabled, hotKey == nil else { return true }
         hotKey = makeHotKey(for: config)
+        return hotKey != nil
     }
 
     private func makeHotKey(for config: HotKeyConfig) -> GlobalHotKey? {

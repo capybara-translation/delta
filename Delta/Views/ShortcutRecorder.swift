@@ -68,16 +68,23 @@ final class RecorderButton: NSButton {
 
     override func resignFirstResponder() -> Bool {
         // Focus lost while still recording (e.g. clicked elsewhere): treat as cancel.
-        if recording { cancelRecording() }
+        // Don't resign focus again from here — AppKit is already mid-transfer to the
+        // new responder; calling makeFirstResponder(nil) re-enters and can leave the
+        // clicked control unable to take focus.
+        if recording { cancelRecording(resignFocus: false) }
         return super.resignFirstResponder()
     }
 
     /// End recording without capturing: restore the previously live hotkey.
-    private func cancelRecording() {
+    /// `resignFocus` is false when called from `resignFirstResponder()` to avoid
+    /// re-entering AppKit's first-responder transfer.
+    private func cancelRecording(resignFocus: Bool = true) {
         guard recording else { return }
         recording = false
         onCancel?()
-        if window?.firstResponder === self { window?.makeFirstResponder(nil) }
+        if resignFocus, window?.firstResponder === self {
+            window?.makeFirstResponder(nil)
+        }
     }
 }
 

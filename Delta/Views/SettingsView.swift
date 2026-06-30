@@ -44,7 +44,7 @@ struct SettingsView: View {
                     // Pause the live hotkey while recording so it can't intercept
                     // the keys being typed; resume it if recording is cancelled.
                     onRecordingStart: { HotKeyController.shared.suspend() },
-                    onCancel: { HotKeyController.shared.resume() }
+                    onCancel: { resumeHotKey() }
                 )
                 .frame(width: 140)
                 .disabled(!hotKey.isEnabled)
@@ -76,5 +76,14 @@ struct SettingsView: View {
         }
         // Reflect the controller's actual state (rolled back on failure).
         hotKey = HotKeyController.shared.config
+    }
+
+    /// Restore the live hotkey after a cancelled recording. If re-registration
+    /// fails (another process grabbed the combo while recording), surface it
+    /// rather than leaving the hotkey silently dead.
+    private func resumeHotKey() {
+        if !HotKeyController.shared.resume() {
+            hotKeyError = "Couldn't re-enable the shortcut. Try again."
+        }
     }
 }
