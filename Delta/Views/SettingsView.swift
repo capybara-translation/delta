@@ -18,6 +18,7 @@ struct SettingsView: View {
                 get: { launchAtLogin },
                 set: { newValue in
                     try? LaunchAtLogin.setEnabled(newValue)
+                    // Reflect the real OS status (reverts the toggle if it failed).
                     launchAtLogin = LaunchAtLogin.isEnabled
                 }
             ))

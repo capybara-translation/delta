@@ -5,7 +5,7 @@ import Carbon
 
 struct HotKeyStoreTests {
     private func freshDefaults() -> UserDefaults {
-        let suite = "HotKeyStoreTests"
+        let suite = "HotKeyStoreTests.\(UUID().uuidString)"
         let d = UserDefaults(suiteName: suite)!
         d.removePersistentDomain(forName: suite)
         return d
@@ -42,6 +42,13 @@ struct HotKeyStoreTests {
     @Test func loadReturnsDefaultWhenOnlyModifiersPresent() {
         let d = freshDefaults()
         d.set(Int(cmdKey), forKey: "hotKeyModifiers")
+        #expect(HotKeyStore.load(from: d) == .default)
+    }
+
+    @Test func loadReturnsDefaultOnOutOfRangeValue() {
+        let d = freshDefaults()
+        d.set(-1, forKey: "hotKeyModifiers")
+        d.set(Int(kVK_ANSI_K), forKey: "hotKeyKeyCode")
         #expect(HotKeyStore.load(from: d) == .default)
     }
 }

@@ -8,11 +8,11 @@ enum HotKeyStore {
 
     static func load(from defaults: UserDefaults = .standard) -> HotKeyConfig {
         guard defaults.object(forKey: keyCodeKey) != nil,
-              defaults.object(forKey: modifiersKey) != nil else {
+              defaults.object(forKey: modifiersKey) != nil,
+              let keyCode = UInt32(exactly: defaults.integer(forKey: keyCodeKey)),
+              let modifiers = UInt32(exactly: defaults.integer(forKey: modifiersKey)) else {
             return .default
         }
-        let keyCode = UInt32(defaults.integer(forKey: keyCodeKey))
-        let modifiers = UInt32(defaults.integer(forKey: modifiersKey))
         let enabled = defaults.object(forKey: enabledKey) as? Bool ?? true
         return HotKeyConfig(keyCode: keyCode, modifiers: modifiers, isEnabled: enabled)
     }
