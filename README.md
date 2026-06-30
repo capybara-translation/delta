@@ -24,6 +24,8 @@ encoding differences (e.g. NFC vs NFD) that look identical on screen.
   (or the character before the caret) are shown beneath each input box.
 - **Keyboard-friendly** — `Tab` / `Shift+Tab` move focus between the two input
   boxes, `Ctrl+Tab` inserts a literal tab, and `Cmd+Return` runs the compare.
+- **Global hotkey** — show or hide the diff window from anywhere with a
+  system-wide shortcut (`⌃⌥D` by default, customizable in Settings).
 
 ## Install
 
@@ -47,6 +49,23 @@ encoding differences (e.g. NFC vs NFD) that look identical on screen.
    diff window opens, ready for you to paste and compare two pieces of text.
 
 To build it yourself instead, see the developer instructions below.
+
+## Settings
+
+Open settings from the menu bar: click the Delta (δ) icon and choose
+**Settings…**. All settings are remembered across launches.
+
+- **Keep text between launches** — when on, the two input boxes keep their text
+  after you quit and reopen the app; when off, each launch starts empty.
+- **Launch at login** — start Delta automatically when you log in.
+- **Global hotkey** — a system-wide shortcut that shows/hides the diff window
+  from any app. It is on by default, bound to `⌃⌥D`.
+  - **Enable global hotkey** turns it on or off.
+  - **Shortcut** records a new combination: click the field, then press the keys
+    you want. The combination must include at least one of `⌘` / `⌃` / `⌥`;
+    press `Esc` to cancel.
+  - **Reset to Default** restores `⌃⌥D`.
+- **Version** shows the installed app version.
 
 ## Requirements (to build from source)
 
