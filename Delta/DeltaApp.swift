@@ -23,7 +23,7 @@ private struct MenuContent: View {
     @Environment(\.openSettings) private var openSettings
 
     var body: some View {
-        Button("Open Delta Diff") { DiffWindowManager.shared.show() }
+        Button("Open Delta Diff…") { DiffWindowManager.shared.show() }
         Button("Settings…") {
             NSApplication.shared.activate(ignoringOtherApps: true)
             openSettings()

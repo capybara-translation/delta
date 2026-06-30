@@ -45,7 +45,7 @@ encoding differences (e.g. NFC vs NFD) that look identical on screen.
    `open "/Applications/Delta Diff.app"`). A Delta (δ) icon appears in the menu
    bar.
 
-5. Click the Delta (δ) icon in the menu bar and choose **Open Delta Diff**. The
+5. Click the Delta (δ) icon in the menu bar and choose **Open Delta Diff…**. The
    diff window opens, ready for you to paste and compare two pieces of text.
 
 To build it yourself instead, see the developer instructions below.
@@ -97,7 +97,7 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
 open build/Build/Products/Debug/Delta.app
 ```
 
-Choose "Open Delta Diff" from the Delta (δ) icon in the menu bar to open the
+Choose "Open Delta Diff…" from the Delta (δ) icon in the menu bar to open the
 window.
 
 ## Test
