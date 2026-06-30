@@ -9,6 +9,10 @@ launching a full editor or reaching for the command line.
 Delta is built for spotting fine character-level differences, including
 encoding differences (e.g. NFC vs NFD) that look identical on screen.
 
+<p align="center">
+  <img src="screenshots/app.png" alt="Delta Diff window: two text inputs above a color-coded, side-by-side diff with per-character highlighting" width="640">
+</p>
+
 ## Features
 
 - **Menu-bar resident** — lives in the menu bar (no Dock icon); open the diff
