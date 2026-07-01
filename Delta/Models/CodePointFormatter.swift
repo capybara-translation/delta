@@ -20,6 +20,20 @@ enum CodePointFormatter {
         return result
     }
 
+    /// Lists every scalar as "U+XXXX" (space-separated), never truncating.
+    /// When there is exactly one scalar, appends its Unicode name (same as `describe`).
+    /// Empty input returns an empty string.
+    static func fullList(_ text: String) -> String {
+        let scalars = Array(text.unicodeScalars)
+        if scalars.isEmpty { return "" }
+
+        var parts = scalars.map(hex)
+        if scalars.count == 1, let name = scalars[0].properties.name, !name.isEmpty {
+            parts[0] += " " + name
+        }
+        return parts.joined(separator: " ")
+    }
+
     /// Formats a scalar as "U+XXXX" with at least 4 uppercase hex digits.
     private static func hex(_ scalar: Unicode.Scalar) -> String {
         let digits = String(scalar.value, radix: 16, uppercase: true)
