@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @AppStorage("keepTextOnReopen") private var keepText = true
+    @AppStorage("checkForUpdatesOnLaunch") private var checkForUpdatesOnLaunch = true
     @State private var launchAtLogin = LaunchAtLogin.isEnabled
     @State private var hotKey = HotKeyController.shared.config
     @State private var hotKeyError: String?
@@ -13,6 +14,7 @@ struct SettingsView: View {
     var body: some View {
         Form {
             Toggle("Keep text between launches", isOn: $keepText)
+            Toggle("Check for updates on launch", isOn: $checkForUpdatesOnLaunch)
 
             Toggle("Launch at login", isOn: Binding(
                 get: { launchAtLogin },

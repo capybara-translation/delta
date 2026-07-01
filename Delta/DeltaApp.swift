@@ -21,13 +21,22 @@ struct DeltaApp: App {
 /// the Settings window opens behind everything and appears not to show.
 private struct MenuContent: View {
     @Environment(\.openSettings) private var openSettings
+    // A plain reference to the shared singleton; @Observable tracks the property
+    // reads in `body`, so no @State is needed (and @State would wrongly imply the
+    // view owns this value's lifetime).
+    private let updateChecker = UpdateChecker.shared
 
     var body: some View {
+        if updateChecker.isUpdateAvailable, let latest = updateChecker.latestVersion {
+            Button("Update available (\(latest))") { updateChecker.openReleasesPage() }
+            Divider()
+        }
         Button("Open Delta Diff…") { DiffWindowManager.shared.show() }
         Button("Settings…") {
             NSApplication.shared.activate(ignoringOtherApps: true)
             openSettings()
         }
+        Button("Check for Updates…") { updateChecker.checkManually() }
         Divider()
         Button("Quit Delta Diff") { NSApplication.shared.terminate(nil) }
             .keyboardShortcut("q")
@@ -35,11 +44,14 @@ private struct MenuContent: View {
 }
 
 /// Registers the global hotkey at launch via HotKeyController, and clears persisted
-/// text at launch when text retention is off.
+/// text at launch when text retention is off. `@MainActor` because its launch work
+/// calls main-actor-isolated singletons (HotKeyController, UpdateChecker).
+@MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         clearTextIfNeeded()
         HotKeyController.shared.start()
+        UpdateChecker.shared.checkOnLaunch()
     }
 
     /// When "keep text between launches" is off, start each launch with empty input.
