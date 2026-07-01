@@ -9,11 +9,15 @@ import Observation
 final class UpdateChecker {
     static let shared = UpdateChecker()
 
-    static let releasesURL = URL(string: "https://github.com/capybara-translation/delta/releases/latest")!
+    private static let releasesURL = URL(string: "https://github.com/capybara-translation/delta/releases/latest")!
     private static let apiURL = URL(string: "https://api.github.com/repos/capybara-translation/delta/releases/latest")!
 
     private(set) var latestVersion: String?
     private(set) var isUpdateAvailable = false
+
+    /// Guards against a second manual check starting while one is in flight
+    /// (rapid double-clicks would otherwise stack alerts).
+    @ObservationIgnored private var isChecking = false
 
     private var currentVersion: String {
         Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
@@ -30,8 +34,12 @@ final class UpdateChecker {
     }
 
     /// Manual check from the menu. Always runs; always reports via an alert.
+    /// Ignores re-entry while a check is already in flight.
     func checkManually() {
+        guard !isChecking else { return }
+        isChecking = true
         Task {
+            defer { isChecking = false }
             do {
                 try await refresh()
                 if isUpdateAvailable, let latest = latestVersion {

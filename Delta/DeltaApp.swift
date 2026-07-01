@@ -21,7 +21,10 @@ struct DeltaApp: App {
 /// the Settings window opens behind everything and appears not to show.
 private struct MenuContent: View {
     @Environment(\.openSettings) private var openSettings
-    @State private var updateChecker = UpdateChecker.shared
+    // A plain reference to the shared singleton; @Observable tracks the property
+    // reads in `body`, so no @State is needed (and @State would wrongly imply the
+    // view owns this value's lifetime).
+    private let updateChecker = UpdateChecker.shared
 
     var body: some View {
         if updateChecker.isUpdateAvailable, let latest = updateChecker.latestVersion {
