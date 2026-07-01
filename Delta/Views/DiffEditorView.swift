@@ -27,13 +27,15 @@ struct DiffEditorView: View {
                 selection.wrappedValue = selected
             }
 
+            // Note: no .textSelection here. A selectable Text hijacks right-click
+            // with the system text menu, which hides our .contextMenu. Since the
+            // context menu provides the full-copy action, we drop text selection.
             Text(display.isEmpty ? " " : display)
                 .font(.system(.caption, design: .monospaced))
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
                 .truncationMode(.tail)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .textSelection(.enabled)
                 .contextMenu {
                     Button("Copy code points") {
                         copyCodePoints(selection.wrappedValue)
