@@ -52,6 +52,7 @@ final class UpdateChecker {
     /// Fetches the latest release, decodes it, and updates state. Throws on failure.
     private func refresh() async throws {
         var request = URLRequest(url: Self.apiURL)
+        request.timeoutInterval = 10   // don't leave a manual check hanging on a bad network
         request.setValue("Delta-Diff", forHTTPHeaderField: "User-Agent")
         request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
         let (data, response) = try await URLSession.shared.data(for: request)

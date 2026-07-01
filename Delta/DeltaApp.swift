@@ -41,7 +41,9 @@ private struct MenuContent: View {
 }
 
 /// Registers the global hotkey at launch via HotKeyController, and clears persisted
-/// text at launch when text retention is off.
+/// text at launch when text retention is off. `@MainActor` because its launch work
+/// calls main-actor-isolated singletons (HotKeyController, UpdateChecker).
+@MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         clearTextIfNeeded()
