@@ -59,6 +59,11 @@ struct CodePointFormatterTests {
         #expect(CodePointFormatter.fullList("AB") == "U+0041 U+0042")
     }
 
+    @Test func fullListSingleNamelessScalar() {
+        // U+0001 is a control character with no Unicode name → code point only.
+        #expect(CodePointFormatter.fullList("\u{0001}") == "U+0001")
+    }
+
     @Test func fullListDoesNotTruncateBeyondMax() {
         // 30 scalars exceeds maxScalars (24). fullList must contain all 30 and no
         // truncation marker, whereas describe truncates the same input.

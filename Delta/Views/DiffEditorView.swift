@@ -44,6 +44,9 @@ struct DiffEditorView: View {
     }
 
     private func copyCodePoints(_ selected: String) {
+        // Guard here (not only via .disabled) so correctness doesn't depend on the
+        // menu's disabled state, which is derived from NSTextView focus/selection.
+        guard !selected.isEmpty else { return }
         let full = CodePointFormatter.fullList(selected)
         NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(full, forType: .string)
