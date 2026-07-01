@@ -46,4 +46,27 @@ struct CodePointFormatterTests {
         let expected = Array(repeating: "U+0061", count: 24).joined(separator: " ")
         #expect(r == expected)
     }
+
+    @Test func fullListEmptyIsEmpty() {
+        #expect(CodePointFormatter.fullList("") == "")
+    }
+
+    @Test func fullListSingleHasName() {
+        #expect(CodePointFormatter.fullList("A") == "U+0041 LATIN CAPITAL LETTER A")
+    }
+
+    @Test func fullListMultipleHasNoName() {
+        #expect(CodePointFormatter.fullList("AB") == "U+0041 U+0042")
+    }
+
+    @Test func fullListDoesNotTruncateBeyondMax() {
+        // 30 scalars exceeds maxScalars (24). fullList must contain all 30 and no
+        // truncation marker, whereas describe truncates the same input.
+        let input = String(repeating: "a", count: 30)
+        let full = CodePointFormatter.fullList(input)
+        let expected = Array(repeating: "U+0061", count: 30).joined(separator: " ")
+        #expect(full == expected)
+        #expect(!full.contains("…"))
+        #expect(CodePointFormatter.describe(input).contains("… (+"))
+    }
 }
