@@ -21,13 +21,19 @@ struct DeltaApp: App {
 /// the Settings window opens behind everything and appears not to show.
 private struct MenuContent: View {
     @Environment(\.openSettings) private var openSettings
+    @State private var updateChecker = UpdateChecker.shared
 
     var body: some View {
+        if updateChecker.isUpdateAvailable, let latest = updateChecker.latestVersion {
+            Button("Update available (\(latest))") { updateChecker.openReleasesPage() }
+            Divider()
+        }
         Button("Open Delta Diff…") { DiffWindowManager.shared.show() }
         Button("Settings…") {
             NSApplication.shared.activate(ignoringOtherApps: true)
             openSettings()
         }
+        Button("Check for Updates…") { updateChecker.checkManually() }
         Divider()
         Button("Quit Delta Diff") { NSApplication.shared.terminate(nil) }
             .keyboardShortcut("q")
@@ -40,6 +46,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         clearTextIfNeeded()
         HotKeyController.shared.start()
+        UpdateChecker.shared.checkOnLaunch()
     }
 
     /// When "keep text between launches" is off, start each launch with empty input.
